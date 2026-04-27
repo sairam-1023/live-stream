@@ -9,7 +9,11 @@
 const socket = io();
 const room = "live123";
 
-let pc = new RTCPeerConnection();
+let pc = new RTCPeerConnection({
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" }
+  ]
+});
 const video = document.getElementById("localVideo");
 
 navigator.mediaDevices.getUserMedia({ video: true, audio: true })
