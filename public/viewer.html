@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Viewer</h2>
+<video id="remoteVideo" autoplay></video>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+const room = "live123";
+
+let pc = new RTCPeerConnection();
+const video = document.getElementById("remoteVideo");
+
+pc.ontrack = e => {
+  video.srcObject = e.streams[0];
+};
+
+pc.onicecandidate = e => {
+  if (e.candidate) {
+    socket.emit("ice", { candidate: e.candidate, room });
+  }
+};
+
+socket.emit("join", room);
+
+socket.on("offer", async offer => {
+  await pc.setRemoteDescription(offer);
+
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+
+  socket.emit("answer", { answer, room });
+});
+
+socket.on("ice", async candidate => {
+  await pc.addIceCandidate(candidate);
+});
+</script>
+</body>
+</html>
